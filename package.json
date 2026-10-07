@@ -1,0 +1,1 @@
+{"name":"titanic-survival-lab","private":true,"type":"module","scripts":{"test":"node tools/check.mjs"}}

@@ -25,7 +25,10 @@ def features(d,extended):
 y=df.Survived
 groups=df.Ticket
 train,test=next(GroupShuffleSplit(n_splits=1,test_size=.2,random_state=42).split(df,y,groups))
+assert set(groups.iloc[train]).isdisjoint(set(groups.iloc[test]))
 cv=list(StratifiedGroupKFold(n_splits=5,shuffle=True,random_state=42).split(df.iloc[train],y.iloc[train],groups.iloc[train]))
+for a,b in cv:
+    assert set(groups.iloc[train].iloc[a]).isdisjoint(set(groups.iloc[train].iloc[b]))
 specs=[('Baseline',False,DummyClassifier(strategy='prior')),('Logistic basic',False,LogisticRegression(C=1,max_iter=2000)),('Logistic family',True,LogisticRegression(C=1,max_iter=2000)),('Random forest basic',False,RandomForestClassifier(n_estimators=250,max_depth=6,min_samples_leaf=5,random_state=42,n_jobs=-1)),('Random forest family',True,RandomForestClassifier(n_estimators=250,max_depth=6,min_samples_leaf=5,random_state=42,n_jobs=-1)),('Gradient boosting family',True,GradientBoostingClassifier(n_estimators=100,max_depth=2,learning_rate=.05,min_samples_leaf=10,random_state=42))]
 rows=[]; fitted={}
 for name,ext,est in specs:

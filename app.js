@@ -6,6 +6,13 @@ try {
  document.querySelector('#metrics').innerHTML = `<div class="metric"><span>선택 모델</span><strong>${report.selected}</strong></div><div class="metric"><span>별도 검증 정확도 (${report.holdout.n}명)</span><strong>${percent(report.holdout.accuracy)}</strong></div><div class="metric"><span>별도 검증 ROC AUC</span><strong>${report.holdout.auc.toFixed(3)}</strong></div>`;
  document.querySelector('#comparison').innerHTML = [...report.rows].sort((a,b)=>a.cv_log_loss-b.cv_log_loss).map(r=>`<tr class="${r.model===report.selected?'selected':''}"><td>${r.model}${r.model===report.selected?' · 선택':''}</td><td>${r.cv_auc.toFixed(3)}</td><td>${percent(r.cv_accuracy)}</td><td>${r.cv_log_loss.toFixed(3)}</td></tr>`).join('');
  function run() {
+  if (!form.checkValidity()) {
+   document.querySelector('#prob').textContent='—';
+   document.querySelector('#ring').style.background='conic-gradient(#87dfc4 0%, #263e4c 0)';
+   document.querySelector('#verdict').textContent='입력값을 확인해 주세요';
+   document.querySelector('#description').textContent='운임과 동행 가족 수를 허용 범위 안에서 입력하면 바로 예측합니다.';
+   return;
+  }
   const p = Object.fromEntries(new FormData(form));
   const probability = predict(model,p);
   document.querySelector('#prob').textContent=percent(probability);
@@ -16,5 +23,7 @@ try {
  form.addEventListener('submit',e=>{e.preventDefault();if(form.reportValidity())run();});
  document.querySelector('#random').addEventListener('click',()=>{const p=people[Math.floor(Math.random()*people.length)];for(const k of ['Sex','Pclass','Age','Fare','SibSp','Parch','Embarked'])form.elements[k].value=p[k]??'';run();});
  document.querySelectorAll('button').forEach(b=>b.disabled=false);
- form.addEventListener('input',()=>{document.querySelector('#description').textContent='입력이 변경되었습니다. 예측 버튼을 눌러 결과를 갱신하세요.';});
+ form.addEventListener('input',run);
+ form.addEventListener('change',run);
+ run();
 } catch(e) {document.querySelector('#verdict').textContent='모델을 불러오지 못했습니다';document.querySelector('#description').textContent='인터넷 연결을 확인하고 페이지를 새로고침하세요.';console.error(e);}
